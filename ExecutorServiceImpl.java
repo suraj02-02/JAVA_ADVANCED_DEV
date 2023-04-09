@@ -48,18 +48,19 @@ import java.util.concurrent.Future;
  *  
  *  
  *   Runnable VS Callable : 	
- *   																		 |	
+ *   				            				     |	
  *     Runnable tasks can be performed concurrently by a thread              |     Callable can only be executed by an executor service 
  *     or an executor service                                                |     
- *     																		 |	
- *     return type is void 													 |	   return type is generic 		   		 
- *     																		 |	
+ *     									     |	
+ *     return type is void 						     |	   return type is generic 		   		 
+ *     									     |	
  *     If the submitted task does not return any result then Runnable        |     If the submitted task has a result as an O/P then callable 
- *     is used																 |	   should be used. 	
- *     																		 |
- *     																		 |
+ *     is used								     |	   should be used. 	
+ *     									     |
+ *     									     |
  *     	
  * 
+ *
  *  What problems are solved using Executor service in applications ? 
  *  
  *  ->  Easy way for developers to work with muthithreading model 
