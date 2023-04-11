@@ -1,0 +1,148 @@
+//* DO NOT ALTER OR REMOVE ANYTHING FROM THIS FILE.
+
+/*@Author - Suraj Yadav
+  Some advanced / tricky string concepts
+*/
+
+package advanedstrings;
+
+/*  Here we will not be discussing the String as a class in JDK instead we will go through Strings in following ways : 
+ *  
+ *  1.Internal String representation in java [char array and char data type in java]   ---> Covered 
+ *  2.String from memory perspective in java 										                       ---> Yet To Cover		
+ *  3.How javac treats String expression by making micro optimizations                 ---> Yet To Cover
+ *  4.Garbage collection on Strings in java                                            ---> Yet To Cover
+ *  5.From char[] -> byte[]  														                               ---> Yet To Cover	
+ *  
+ *  
+ *  1.Internal String representation in java
+ *  ----------------------------------------
+ *  
+ *  #Java uses Unicode specification for its character which makes it rich in characters.
+ *  #Strings in java is equivalent to char[] array where each character has a certain unicode that maps to the specific Ascii code and based 
+ *   on that it is stored in memory
+ *  #Each char is a 16 bit entity i.e 2 bytes in size
+ *  #Breaking down the 2 Byte size : 
+ *   -----------------------------
+ *     
+ *        2 Bytes -> 16bits -> range (0 to 2^16) 
+ *        So java provides a wide range for char range b/w (0 to 65535) 
+ *            
+ *  #Thus it is the ascii value / unicode representation through which a character is identified by a compiler.
+ *  
+ *   eg : char ch = 'A'; (How compiler treats this expression)
+ *        @Print(ch) O/P : A                         
+ *      ->  The value 'A' is converted to unicode representation which is further mapped to its specific Ascii Value that is 
+ *          stored in memory
+ *      ->  The variable ch than points to that specific ascii value which is represented as 'A'.
+ *   
+ *        char ch = 65 
+ *        @Print(ch) O/P : A
+ *      ->  Here the value 65 is treated as an ascii value by compiler and using that its unicode representation is found out and thus the character 
+ *          
+ *        char ch = '\u0041';
+ *        @Print(ch) O/P : A 
+ *      -> Here we are directly using unicode representaion of a character.
+ *        
+ *  #char cannot be concatenated as like Strings in java , on adding two char values compiler simply adds there ascii value and return
+ *      
+ *      char a2 = 'A';
+ *      char a12 = 'C';
+ *      @Print(a2 + a12) O/P : 132      
+ *          
+ *          
+ *          
+ */
+
+
+public class AdvanceStrings {
+
+	public static void main(String[] args) {
+	
+	
+	/*
+	 * to store ch1 in memory here firstly compiler will find out the unicode which
+	 * is mapped to a specific ascii code and ascii value is stored
+	 * 
+	 * And when the char is provided to int it is compatible due to widening type conversion
+	 * and will store the ascii value of ('A' + 'X')
+	 */ 
+		
+		    char ch3 = 'A';
+		    int i = 'A' + 'X';
+		    System.out.println(ch3);
+		    System.out.println(i);
+	/*
+	 * As mentioned the char data type is treated a special way like strings in java
+	 * any char variable stores its ascii value in memory and any comparison made on two 
+	 * char variable is based on that ascii value only.
+	 * 
+	 * Here 'A' whose ascii value is = 65 thus ch1 internally stores 65 in memory 
+	 * 
+	 * Also ch2 provided an integer value in its range (0 to 65535) will consider it as it's
+	 * ascii value and stores in memory
+	 * 
+	 * Thus O/p -> true
+	 * 
+	 */
+	
+		char ch1 = 'A';
+		char ch2 =  65;
+		System.out.println(ch1 == ch2);
+		
+    
+    /*
+	 * here ch2 is evaluated as 1 + Ascii value of('A') = 1 + 65 = 66
+	 * since the return was taken into char type the character that 
+	 * maps to the evaluated ascii code is printed.
+	 * 
+	 *  O/p -> 'B'
+	 */
+	    
+		char ch4 = 'A' + 1;
+	    System.out.println(ch4);
+
+	/*
+	 * Here the below expression will give compile time error which is beacause
+	 * javac assumes that the char range (0 to 65535) might get overflowed
+	 * Since the variable @ch2 here will not be resolved at compile time.
+	 * 
+	 */	    
+	   
+	    char ch15 = ch4 + 1; // comment this to avoid compile error
+	   
+	    
+	    final char ch6 = 'Z';
+
+	/*
+	 * Notice here the below expression will evaluate fine and no compilation error
+	 * given. The reason is that here the variable @ch4 will get resolved at compile
+	 * time since we have made it as final.
+	 * 
+	 * Note : Final keyword signifies that the variable can't be re-assigned any 
+	 *        value so it is able to resolve it at compile time.
+	 *        
+	 *        Final keyword helps compiler in micro Optimizations as seen here. 
+	 */	    
+	    
+	     char ch5 = ch6 + 1;
+	     System.out.println(ch5);
+	 
+	  
+	     
+	/*
+	 * Here ch7 will be evaluated first based on the sum of all the characters ascii
+	 * value. Now ch7 contains the character representation of that ascii value and 
+	 * when provided to an integer its ascii value is passed on 
+	 * 
+	 *  Thus @ch8 = Sum of Ascii Values of ('A' , 'B' , 'C' , 'D')  
+	 */
+	     
+	     char ch7 = 'A' + 'B' + 'C' + 'D';
+	     int ch8 = ch7;
+	     System.out.println(ch7);
+	     System.out.println(ch8);
+	      
+	}
+	
+}
