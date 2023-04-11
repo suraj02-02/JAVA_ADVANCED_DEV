@@ -61,7 +61,7 @@ public class AdvanceStrings {
 	
 	
 	/*
-	 * to store ch1 in memory here firstly compiler will find out the unicode which
+	 * to store @ch3 in memory here firstly compiler will find out the unicode which
 	 * is mapped to a specific ascii code and ascii value is stored
 	 * 
 	 * And when the char is provided to int it is compatible due to widening type conversion
