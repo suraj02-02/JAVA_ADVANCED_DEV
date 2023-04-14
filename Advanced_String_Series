@@ -8,22 +8,23 @@ package advanedstrings;
 
 /*  Here we will not be discussing the String as a class in JDK instead we will go through Strings in following ways : 
  *  
- *  1.Internal String representation in java [char array and char data type in java]   ---> Covered 
- *  2.String from memory perspective in java 					       ---> Yet To Cover		
- *  3.How javac treats String expression by making micro optimizations                 ---> Yet To Cover
+ *  1.Internal String representation in java [char array and char data type in java]   ---> Covered  #charInternalImpl()
+ *  2.String variable from memory perspective in java 				       ---> Covered  #main()		
+ *  3.How javac treats String expression by making micro optimizations                 ---> Covered
  *  4.Garbage collection on Strings in java                                            ---> Yet To Cover
- *  5.From char[] -> byte[]  							       ---> Yet To Cover	
+ *  5.From char[] -> byte[]  		                                               ---> Yet To Cover	
  *  
  *  
  *  1.Internal String representation in java
  *  ----------------------------------------
  *  
- *  #Java uses Unicode specification for its character which makes it rich in characters.
- *  #Strings in java is equivalent to char[] array where each character has a certain unicode that maps to the specific Ascii code and based 
- *   on that it is stored in memory
- *  #Each char is a 16 bit entity i.e 2 bytes in size
- *  #Breaking down the 2 Byte size : 
- *   -----------------------------
+ *  # Java uses Unicode specification for its character which makes it rich in characters.
+ *  # Strings in java is equivalent to char[] array where each character has a certain unicode that maps to the specific Ascii code and based 
+ *    on that it is stored in memory
+ *  # Each char is a 16 bit entity i.e 2 bytes in size
+ *  
+ *  # Breaking down the 2 Byte size : 
+ *   ------------------------------
  *     
  *        2 Bytes -> 16bits -> range (0 to 2^16) 
  *        So java provides a wide range for char range b/w (0 to 65535) 
@@ -50,6 +51,45 @@ package advanedstrings;
  *      char a12 = 'C';
  *      @Print(a2 + a12) O/P : 132      
  *          
+ *     ###################################################   #######################################################    ############################################          
+ *   
+ *  2.String from memory perspective in java
+ *  ----------------------------------------         
+ *          
+ *     # Strings in java are treated a bit different in java. Unlike other objects in java strings are provided with a special memory area inside heap.
+ *     # It is the most used object in a java application accommodating around 50% of heap space (String pool included).
+ *     # It is provided with some extra features like : 
+ *       --------------------------------------------
+ *           
+ *            1.Automatic creation of new String instances from string literals
+ *            2.Concatenation of multiple String objects by use of the + operator
+ *            3.Conversion of other data types to a string representation.				  
+ *     
+ *     # String created using literals  -> a reference is created in pool pointing to the char[] which is in heap
+ *        
+ *         In this scenario the string reference present in pool is determined at compile time when the constant pool of a class file is created.
+ *         Since it will be present in String pool area , GC activities are not allowed there (Very less garbage collection happens in pool area)
+ *         Thus the string reference in pool are reusable and in this way JVM avoids duplicate string creation to some extent.
+ *         
+ *         @Note : Don't confuse the String constant pool with Class constant pool both are separate entities in java.
+ *         
+ *         
+ *     # String created using new created -> only temporary reference is present in stack pointing to char[] in heap
+ *        
+ *         Here the scenario to reuse the string object is no more valid (although the internal char[] can be resused).
+ *         The object created will be present in heap memory and will be referred by stack variable of the particular method's stack frame.
+ *        
+ *       @Important : 
+ *       ---------- 
+ *       But for given two Strings the internal data structure used i.e char[] can be same wether it is created using literals or new keyword
+ *       Thus creating an object of String using new keyword is not that expensive that we often think it is.
+ *       
+ *      # String object itself is rather cheap. It's the text it points to that consumes most of the memory 
+ *      # String is just a thin wrapper around char[] to preserve immutability
+ *      # new String("abc") isn't really that expensive as the internal text representation is reused. But still avoid such construct.
+ *      # When String is concatenated from constant values known at compile time, concatenation is done by the compiler, not by the JVM
+ *          
+ *            
  *          
  *          
  */
@@ -58,91 +98,238 @@ package advanedstrings;
 public class AdvanceStrings {
 
 	public static void main(String[] args) {
-	
-	
+		
 	/*
-	 * to store @ch3 in memory here firstly compiler will find out the unicode which
-	 * is mapped to a specific ascii code and ascii value is stored
+	 * String a1 , a2 are created through string literals thus there object will
+	 * be created in String constant pool. 
 	 * 
-	 * And when the char is provided to int it is compatible due to widening type conversion
-	 * and will store the ascii value of ('A' + 'X')
+	 * String a3 will also get resolved at compile time and will be present in pool.
+	 * 
+	 * Internally all the references a1 , a2, a3 will point to the same char[]
+	 * Note : The concatenation for a3 is done by compiler not by jvm
+	 * 
+	 * Below is the byte code generated 
+ 	 * --------------------------------
+ 	 *   
+ 	 *   Here we can see that for a1 , a2 , a3 are loaded with same #7 constant 
+	 *   
+	 *   0: ldc                #7                  // String abcd
+         *   2: astore_1
+         *   3: ldc                #7                  // String abcd
+         *   5: astore_2
+         *   6: ldc                #7                  // String abcd
+         *   8: astore_3
+         * 
+	 */
+	    
+		String a1 = "abcd";            // resolved at compile time
+		String a2 = "abcd";            // resolved at compile time 
+		String a3 = "ab" + "cd";       // resolved at compile time
+		
+		System.out.println(System.identityHashCode(a1));
+		System.out.println(System.identityHashCode(a2));
+		System.out.println(System.identityHashCode(a3));
+
+		
+	/*
+	 * Often times we have doubt as if the two string content is same and if
+	 * they are not created using new keyword both will have same reference to a
+	 * string object in pool but it is not the case.
+	 * 
+	 * Take below string a6 despite of being created using string literals it does not refer to same memory location  
+	 * a4 which got created in pool.
+	 * 
+	 * Byte Code : 
+	 * 
+	 *    0: ldc               #7                  // String abcd
+         *    2: astore_1
+         *    3: ldc               #9                  // String ab
+         *    5: astore_2
+         *    6: aload_2
+         *    7: invokedynamic    #11,  0             // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;  
+         *    
+         *    Here compiler makes a symbolic reference of #makeConcatWithConstants() method for runtime concatenation for the string a6
+	 * 
 	 */ 
+         
+		 String a4 = "abcd";                    // resolved at compile time 
+		 String a5 = "ab";                      // resolved at compile time    
+		 String a6 = a5 + "cd";                 // resolved at runtime thus will not  be present in string pool
+		 String internOfA6 = a6.intern();       // string pool reference of String a5 
+		 
+		 System.out.println(a6 == internOfA6);   
+		 System.out.println(a6 == a4);
 		
-		    char ch3 = 'A';
-		    int i = 'A' + 'X';
-		    System.out.println(ch3);
-		    System.out.println(i);
+		 
+		
 	/*
-	 * As mentioned the char data type is treated a special way like strings in java
-	 * any char variable stores its ascii value in memory and any comparison made on two 
-	 * char variable is based on that ascii value only.
+	 * Now we know that the below two strings b & b1 will get resolved at
+	 * compile time and will be present in pool but b2 will not get resolved at
+	 * compile time. 
 	 * 
-	 * Here 'A' whose ascii value is = 65 thus ch1 internally stores 65 in memory 
+	 * Byte code : 
 	 * 
-	 * Also ch2 provided an integer value in its range (0 to 65535) will consider it as it's
-	 * ascii value and stores in memory
+	 *    0: ldc                  #7                  // String Trending
+         *    2: astore_1
+         *    3: ldc                  #9                  // String Tren
+         *    5: astore_2
+         *    6: aload_2
+         *    7: invokedynamic       #11,  0             // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+         *    12: astore_3
+         *    13: return
 	 * 
-	 * Thus O/p -> true
 	 * 
+	 * Now lets make the String b1 as final and then see the o/p : 
+	 * 
+	 * Byte code : 
+	 *   
+	 *     0: ldc           #7                  // String Trending
+         *     2: astore_1
+         *     3: ldc           #7                  // String Trending
+         *     5: astore_2
+         *     6: return
+	 *    
+	 *  Just making b1 as final has made much difference in the byte code 
+	 *  This is basically a micro optimization that the java compiler has performed here 
+	 *  Making b1 as final indicates the compiler that now b1 can be treated as a constant thus it regenerated the expression as: 
+	 *  
+	 *     What we gave :                                     |             What compiler did : 
+	 *                                                        | 
+	 *      final String b1 = "Tren";                         |             String b2 = "Tren" + "ding";  
+	 *      String b2 = b1 + "ding"                           | 
+	 *                                                        |
+	 * 
+	 */		
+		
+		 String b = "Trending";                  // resolved at compile time 
+		 String b1 = "Tren";                     // resolved at compile time 
+		 String b2 = b1 + "ding";                // b2 will get resolve at compile time if b1 is made as final and thus will be present in pool area.
+		 String internOfB2 = b2.intern();
+	 
+    	         System.out.println(b2 == internOfB2);   // will be true if b1 is made as final else it will be false
+		 
+	    
+	/*
+	 * Here we are creating String object using literal and new keyword
+	 * The expression seems to be creating some duplicate string objects , but it is not really how it looks.
+	 * 
+	 * Here once the program run : 
+	 * -------------------------   
+	 *     c will be created in string pool 
+	 *     c1 will be in heap 
+	 *     c2 will be in heap 
+	 *     
+	 *     But the catch is , the main internal data structure of String i.e char[] will be same for all of them.
+	 *     Thus even if we are creating 3 string objects here , but from memory point of view it is not that expensive
+	 *     
+	 *     The string class constructor explains the reason : 
+	 *     ------------------------------------------------      
+	 *       public String(String original) {
+         *             this.offset = original.offset;
+         *             this.count = original.count;
+         *             this.value = original.value;
+         *        }
+	 *     
+	 *     We can check if the same char[] (i,e value field of String class) is pointed by all the string objects using reflection api's in java
+	 *  
 	 */
 	
-		char ch1 = 'A';
-		char ch2 =  65;
-		System.out.println(ch1 == ch2);
+	         String c = "abc";                         // c will get resolve at compile time thus part of pool
+		 String c1 = new String(c);                // c1 will never be part of pool 
+		 String c2 = new String("abc");            // c2 will never be part of pool 
+		 
+		 System.out.println(c == c1 );
+		 System.out.println(c1 == c2 );
+			 
+	}
+	
+	
+	private void charInternalImpl() {
+
+		/*
+		 * to store ch1 in memory here firstly compiler will find out the unicode which
+		 * is mapped to a specific ascii code and ascii value is stored
+		 * 
+		 * And when the char is provided to int it is compatible due to widening type conversion
+		 * and will store the ascii value of ('A' + 'X')
+		 */ 
+
+			    char ch3 = 'A';
+			    int i = 'A' + 'X';
+			    System.out.println(ch3);
+			    System.out.println(i);
+			
+
+	        /*
+		 * As mentioned the char data type is treated a special way like strings in java
+		 * any char variable stores its ascii value in memory and any comparison made on two 
+		 * char variable is based on that ascii value only.
+		 * 
+		 * Here 'A' whose ascii value is = 65 thus ch1 internally stores 65 in memory 
+		 * 
+		 * Also ch2 provided an integer value in its range (0 to 65535) will consider it as it's
+		 * ascii value and stores in memory
+		 * 
+		 * Thus O/p -> true
+		 * 
+		 */
 		
-    
-        /*
-	 * here ch2 is evaluated as 1 + Ascii value of('A') = 1 + 65 = 66
-	 * since the return was taken into char type the character that 
-	 * maps to the evaluated ascii code is printed.
-	 * 
-	 *  O/p -> 'B'
-	 */
+			char ch1 = 'A';
+			char ch2 =  65;
+			System.out.println(ch1 == ch2);
+			
 	    
-		char ch4 = 'A' + 1;
-	    System.out.println(ch4);
+	        /*
+		 * here ch2 is evaluated as 1 + Ascii value of('A') = 1 + 65 = 66
+		 * since the return was taken into char type the character that 
+		 * maps to the evaluated ascii code is printed.
+		 * 
+		 *  O/p -> 'B'
+		 */
+		    
+			char ch4 = 'A' + 1;
+		        System.out.println(ch4);
 
-	/*
-	 * Here the below expression will give compile time error which is beacause
-	 * javac assumes that the char range (0 to 65535) might get overflowed
-	 * Since the variable @ch2 here will not be resolved at compile time.
-	 * 
-	 */	    
-	   
-	    char ch15 = ch4 + 1; // comment this to avoid compile error
-	   
-	    
-	    final char ch6 = 'Z';
+     	        /*
+		 * Here the below expression will give compile time error which is beacause
+		 * javac assumes that the char range (0 to 65535) might get overflowed
+		 * Since the variable @ch2 here will not be resolved at compile time.
+		 * 
+		 */	    
+		   
+		   // char ch15 = ch4 + 1; // comment this to avoid compile error
+		   
+		    
+		    final char ch6 = 'Z';
 
-	/*
-	 * Notice here the below expression will evaluate fine and no compilation error
-	 * given. The reason is that here the variable @ch4 will get resolved at compile
-	 * time since we have made it as final.
-	 * 
-	 * Note : Final keyword signifies that the variable can't be re-assigned any 
-	 *        value so it is able to resolve it at compile time.
-	 *        
-	 *        Final keyword helps compiler in micro Optimizations as seen here. 
-	 */	    
-	    
-	     char ch5 = ch6 + 1;
-	     System.out.println(ch5);
-	 
-	  
-	     
-	/*
-	 * Here ch7 will be evaluated first based on the sum of all the characters ascii
-	 * value. Now ch7 contains the character representation of that ascii value and 
-	 * when provided to an integer its ascii value is passed on 
-	 * 
-	 *  Thus @ch8 = Sum of Ascii Values of ('A' , 'B' , 'C' , 'D')  
-	 */
-	     
-	     char ch7 = 'A' + 'B' + 'C' + 'D';
-	     int ch8 = ch7;
-	     System.out.println(ch7);
-	     System.out.println(ch8);
-	      
+		/*
+		 * Notice here the below expression will evaluate fine and no compilation error
+		 * given. The reason is that here the variable @ch4 will get resolved at compile
+		 * time since we have made it as final.
+		 * 
+		 * Note : Final keyword signifies that the variable can't be re-assigned any 
+		 *        value so it is able to resolve it at compile time.
+		 *        
+		 *        Final keyword helps compiler in micro Optimizations as seen here. 
+		 */	    
+		    
+		     char ch5 = ch6 + 1;
+		     System.out.println(ch5);
+		 
+
+		/*
+		 * Here ch7 will be evaluated first based on the sum of all the characters ascii
+		 * value. Now ch7 contains the character representation of that ascii value and 
+		 * when provided to an integer its ascii value is passed on 
+		 * 
+		 *  Thus @ch8 = Sum of Ascii Values of ('A' , 'B' , 'C' , 'D')  
+		 */
+		     
+		     char ch7 = 'A' + 'B' + 'C' + 'D';
+		     int ch8 = ch7;
+		     System.out.println(ch7);
+		     System.out.println(ch8);
+		
 	}
 	
 }
